@@ -97,13 +97,4 @@ if uploaded_file:
             return "出品中"
     df["ステータス"] = df["在庫数"].apply(judge_status)
 
-    # 並び替え方法を選択
-    sort_key = st.selectbox("並び替え方法を選んでください", ["利益", "いいね数", "販売数"])
-    df_sorted = df.sort_values(by=sort_key, ascending=False)
-
-    st.subheader("📊 ランキング表")
-    st.dataframe(df_sorted[["商品名", "利益", "いいね数", "販売数", "在庫数", "ステータス"]])
-
-else:
-    st.info("Excel または CSV ファイルをアップロードしてください。")
 
