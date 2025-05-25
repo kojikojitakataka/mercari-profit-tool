@@ -61,3 +61,38 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f'❌ ファイルの読み込み中にエラーが発生しました: {e}')
+import streamlit as st
+from PIL import Image
+import io
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 画像アップロード
+st.header("🖼️ 画像で商品を検索")
+uploaded_image = st.file_uploader("画像をアップロードしてください", type=["jpg", "jpeg", "png"])
+
+if uploaded_image:
+    image = Image.open(uploaded_image)
+    st.image(image, caption="アップロードされた画像", use_column_width=True)
+
+    # 仮の類似商品検索ロジック（ここをAPIやスクレイピングに変更可能）
+    st.info("🔍 類似商品を検索中...")
+    # ↓ここではダミーデータ（実際は画像→商品名→メルカリ・PayPay検索）
+    data = {
+        "商品名": ["Tシャツ", "Tシャツ 白", "おしゃれTシャツ"],
+        "価格": [1200, 1300, 1250]
+    }
+    df = pd.DataFrame(data)
+
+    # 📊 グラフで価格分布を表示
+    st.subheader("📈 類似商品の価格分布")
+    st.bar_chart(df["価格"])
+
+    # 💾 CSVダウンロード
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button("⬇️ CSVでダウンロード", csv, "similar_products.csv", "text/csv")
+
+    # 中央値・最頻値表示
+    st.write("🧮 **中央値：**", df["価格"].median())
+    st.write("🔁 **最頻値：**", df["価格"].mode()[0])
