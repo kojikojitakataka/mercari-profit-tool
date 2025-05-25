@@ -96,3 +96,25 @@ if uploaded_image:
     # 中央値・最頻値表示
     st.write("🧮 **中央値：**", df["価格"].median())
     st.write("🔁 **最頻値：**", df["価格"].mode()[0])
+from PIL import Image
+import io
+
+st.header("📷 画像から類似商品検索")
+
+uploaded_image = st.file_uploader("画像をアップロードしてください（例：商品写真）", type=["jpg", "jpeg", "png"])
+
+if uploaded_image is not None:
+    image = Image.open(uploaded_image)
+    st.image(image, caption="アップロードした画像", use_column_width=True)
+
+    # 仮：画像から商品名を推定（ここは将来的にAIモデルに置き換え予定）
+    st.markdown("🔍 **AIによる予測商品名（例）:**")
+    predicted_name = "Tシャツ（白 無地）"  # 仮の例
+    st.success(predicted_name)
+
+    if st.button("🔎 メルカリ・PayPayフリマで検索する"):
+        # 検索リンク表示
+        mercari_url = f"https://www.mercari.com/jp/search/?keyword={predicted_name}"
+        paypay_url = f"https://paypayfleamarket.yahoo.co.jp/search?query={predicted_name}"
+        st.markdown(f"🟥 [メルカリで検索]({mercari_url})")
+        st.markdown(f"🟦 [PayPayフリマで検索]({paypay_url})")
