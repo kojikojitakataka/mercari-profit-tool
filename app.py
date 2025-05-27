@@ -3,25 +3,63 @@ from PIL import Image
 import pandas as pd
 import urllib.parse
 import datetime
+import torch
+import clip
+import os
 
 # --- ページ設定 ---
-st.set_page_config(page_title="画像で商品検索 & 利益計算ツール", layout="centered")
-st.header("🛍️ フリマアシスト - 万能せどり支援アプリ")
+st.set_page_config(page_title="複合せどり売買ツール（セドファクトリー）", layout="centered")
+st.title("🛍️ 複合せどり売買ツール（セドファクトリー）")
+st.caption("制作者：小島 崇彦　制作日：2025年5月27日")
 
 # --- 画像アップロード ---
 uploaded_image = st.file_uploader("画像をアップロードしてください（jpg, png）", type=["jpg", "jpeg", "png"])
 
-# --- 商品ジャンル選択（補助） ---
-genre = st.selectbox("商品ジャンルを選択してください（任意）", ["衣類", "家電", "本・雑誌", "ホビー", "その他"])
+# --- 商品ジャンル選択 ---
+genre = st.selectbox(
+    "商品ジャンルを選択してください（任意）",
+    [
+        "衣類", "家電", "本・雑誌", "ホビー", "おもちゃ", "ゲーム", "スポーツ用品",
+        "アウトドア", "美容・健康", "食品・飲料", "家具・インテリア", "ベビー・キッズ",
+        "ペット用品", "車・バイク", "楽器", "チケット", "その他"
+    ]
+)
 
 if uploaded_image is not None:
     try:
         image = Image.open(uploaded_image)
         st.image(image, caption="アップロードされた画像", use_container_width=True)
 
-        # --- 商品名予測（仮） ---
-        predicted_name = "Tシャツ（白 無地）"  # 仮の名前（AI導入予定）
-        st.markdown("🔍 **AIによる予測商品名（仮）:**")
+        # --- CLIPモデルによる商品名予測 ---
+        st.markdown("🔍 **AIによる予測商品名:**")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model, preprocess = clip.load("ViT-B/32", device=device)
+
+        # 画像の前処理
+        image_preprocessed = preprocess(image).unsqueeze(0).to(device)
+
+        # 商品名の候補リスト
+        candidate_labels = [
+            "白いTシャツ", "黒いTシャツ", "青いジーンズ", "赤いスニーカー", "ノートパソコン",
+            "スマートフォン", "腕時計", "バックパック", "ギター", "電子レンジ"
+        ]
+
+        # テキストの前処理
+        text_tokens = clip.tokenize(candidate_labels).to(device)
+
+        # 特徴量の取得
+        with torch.no_grad():
+            image_features = model.encode_image(image_preprocessed)
+            text_features = model.encode_text(text_tokens)
+
+        # 類似度の計算
+        image_features /= image_features.norm(dim=-1, keepdim=True)
+        text_features /= text_features.norm(dim=-1, keepdim=True)
+        similarities = (image_features @ text_features.T).squeeze(0)
+
+        # 最も類似度の高いラベルを選択
+        best_match_index = similarities.argmax().item()
+        predicted_name = candidate_labels[best_match_index]
         st.success(predicted_name)
 
         # --- EC/フリマ 検索リンク ---
@@ -85,10 +123,9 @@ if uploaded_image is not None:
         # --- サポートリンク ---
         st.subheader("📚 お役立ちリンク")
         st.markdown("- 🟥 [メルカリ 出品ページ](https://www.mercari.com/jp/sell/)")
-        st.markdown("- 🟥 [メルカリ 送料早見表（最新）](https://www.mercari.com/jp/help_center/article/entry/513/)")
+        st.markdown("- 🟥 [メルカリ 送料早見表（最新）](https://help.jp.mercari.com/guide/articles/1080/)")
         st.markdown("- 🟦 [PayPayフリマ 出品ページ](https://paypayfleamarket.yahoo.co.jp/sell)")
-        st.markdown("- 🟦 [PayPayフリマ 配送方法ガイド](https://support.yahoo-net.jp/Picnic/s/article/H000005060)")
-        st.markdown("- 📦 [ヤフオク 送料早見表](https://auctions.yahoo.co.jp/topic/promo/post/guide/price.html)")
+        st.markdown("- 🟦 [PayPayフリマ 発送方法ガイド](https://paypayfleamarket.yahoo.co.jp/contents/shipping)")
 
     except Exception as e:
         st.error(f"エラー: {e}")
