@@ -84,10 +84,11 @@ if uploaded_image is not None:
 
         # --- サポートリンク ---
         st.subheader("📚 お役立ちリンク")
-        st.markdown("- [メルカリ出品ページ](https://www.mercari.com/jp/sell/)")
-        st.markdown("- [メルカリ公式の送料一覧](https://www.mercari.com/jp/help_center/article/entry/516/)")
-        st.markdown("- [メルカリガイド](https://help.jp.mercari.com/)")
-        st.markdown("- [ヤフオク送料早見表](https://auctions.yahoo.co.jp/topic/promo/post/guide/price.html)")
+        st.markdown("- 🟥 [メルカリ 出品ページ](https://www.mercari.com/jp/sell/)")
+        st.markdown("- 🟥 [メルカリ 送料早見表（最新）](https://www.mercari.com/jp/help_center/article/entry/513/)")
+        st.markdown("- 🟦 [PayPayフリマ 出品ページ](https://paypayfleamarket.yahoo.co.jp/sell)")
+        st.markdown("- 🟦 [PayPayフリマ 配送方法ガイド](https://support.yahoo-net.jp/Picnic/s/article/H000005060)")
+        st.markdown("- 📦 [ヤフオク 送料早見表](https://auctions.yahoo.co.jp/topic/promo/post/guide/price.html)")
 
     except Exception as e:
         st.error(f"エラー: {e}")
