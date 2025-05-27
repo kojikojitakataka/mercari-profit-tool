@@ -28,3 +28,34 @@ if keyword:
 # フッター
 st.markdown("---")
 st.caption("🛠️ 制作：小島崇彦")
+import pandas as pd
+from datetime import datetime
+
+# ① タイトルと説明（ここは今あるコードにすでにあります）
+
+# ② 入力フォーム
+price = st.number_input("販売価格（円）", value=1000)
+shipping = st.number_input("送料（円）", value=200)
+purchase_cost = st.number_input("仕入れ値（円）", value=500)
+
+# ③ 計算
+mercari_fee = price * 0.1
+profit = price - mercari_fee - shipping - purchase_cost
+
+# ④ 結果表示
+st.write(f"メルカリ手数料: {mercari_fee:.0f} 円")
+st.write(f"利益: {profit:.0f} 円")
+
+# ⑤ 保存ボタン（CSV形式）
+if st.button("結果を保存する"):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    df = pd.DataFrame([{
+        "日時": now,
+        "販売価格": price,
+        "送料": shipping,
+        "仕入れ値": purchase_cost,
+        "手数料": mercari_fee,
+        "利益": profit
+    }])
+    df.to_csv("profit_history.csv", mode='a', index=False, header=False)
+    st.success("保存しました！")
