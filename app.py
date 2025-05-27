@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import io
 
 st.title("メルカリ利益計算ツール")
 
@@ -18,7 +17,7 @@ profit = price - mercari_fee - shipping - purchase_cost
 st.write(f"メルカリ手数料: {mercari_fee:.0f} 円")
 st.write(f"利益: {profit:.0f} 円")
 
-# ダウンロードボタン（CSV形式）
+# 結果の保存（CSVダウンロード）
 df = pd.DataFrame([{
     "日時": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     "販売価格": price,
@@ -34,3 +33,4 @@ st.download_button(
     data=csv,
     file_name="profit_history.csv",
     mime="text/csv"
+)
