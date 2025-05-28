@@ -1,74 +1,73 @@
 import streamlit as st
-from PIL import Image
 import pandas as pd
 from datetime import datetime
+import urllib.parse
+import requests
+from bs4 import BeautifulSoup
 
-# アプリの設定
+# アプリタイトル
 st.set_page_config(page_title="リサーチナビ", layout="wide")
+st.title("🛒 リサーチナビ - 利益計算 & 相場リサーチツール")
+st.caption("制作者: 小島崇彦")
 
-# ヘッダー
-st.markdown("<h1 style='color:red;'>🔍 リサーチナビ</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='color:orange;'>画像から商品を検索して、価格比較＆利益計算！</h3>", unsafe_allow_html=True)
+# 商品画像アップロード（任意）
+st.subheader("🖼️ 商品画像のアップロード")
+uploaded_image = st.file_uploader("画像を選択してください（任意）", type=["jpg", "jpeg", "png"])
+if uploaded_image:
+    st.image(uploaded_image, caption="アップロードされた画像", use_column_width=True)
 
-# -------------------------
-# 📷 画像アップロード
-# -------------------------
-st.subheader("🖼️ 商品画像アップロード")
-uploaded_file = st.file_uploader("画像をアップロードしてください", type=["jpg", "jpeg", "png"])
+# 商品名入力
+st.subheader("🔍 商品名の入力")
+product_name = st.text_input("検索する商品名を入力してください", placeholder="例: ナイキ エアフォース1")
 
-if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="アップロード画像", use_container_width=True)
-    # ★ 仮の商品名（AIで推定予定の部分）
-    product_name = "ナイキ エアマックス（仮）"
-    st.success(f"画像から推定された商品名: {product_name}")
+# 価格取得（仮）
+def get_mock_price(product_name, site_name):
+    encoded = urllib.parse.quote(product_name)
+    return f"https://www.{site_name}.com/search/?keyword={encoded}"
 
-    # -------------------------
-    # 🔗 ECサイトリンク
-    # -------------------------
-    st.subheader("🛒 各サイトで検索")
-    query = product_name.replace(" ", "+")
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
-    with col1:
-        st.markdown(f"[メルカリ](https://www.mercari.com/jp/search/?keyword={query})", unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"[Amazon](https://www.amazon.co.jp/s?k={query})", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"[楽天](https://search.rakuten.co.jp/search/mall/{query}/)", unsafe_allow_html=True)
-    with col4:
-        st.markdown(f"[Yahoo!](https://shopping.yahoo.co.jp/search?p={query})", unsafe_allow_html=True)
-    with col5:
-        st.markdown(f"[PayPayフリマ](https://paypayfleamarket.yahoo.co.jp/search/{query})", unsafe_allow_html=True)
-    with col6:
-        st.markdown(f"[1688.com](https://s.1688.com/selloffer/offer_search.htm?keywords={query})", unsafe_allow_html=True)
+# サイト一覧
+ec_sites = {
+    "Amazon": "amazon.co.jp",
+    "楽天": "rakuten.co.jp",
+    "Yahoo!ショッピング": "shopping.yahoo.co.jp",
+    "メルカリ": "mercari.com/jp",
+    "PayPayフリマ": "paypayfleamarket.yahoo.co.jp",
+    "1688.com": "1688.com",
+    "ドン・キホーテ": "donki.com",
+    "Costco": "costco.co.jp"
+}
 
-# -------------------------
-# 💰 利益計算
-# -------------------------
-st.subheader("💸 利益計算フォーム")
+if product_name:
+    st.subheader("🌐 ECサイト検索リンク")
+    for site, domain in ec_sites.items():
+        url = get_mock_price(product_name, domain)
+        st.markdown(f"- [{site}で検索]({url})", unsafe_allow_html=True)
 
-price = st.number_input("販売価格（円）", value=3000)
-shipping = st.number_input("送料（円）", value=500)
-cost = st.number_input("仕入れ値（円）", value=1500)
+# 利益計算フォーム
+st.subheader("💰 利益計算")
+sell_price = st.number_input("販売価格（円）", value=1000)
+shipping_fee = st.number_input("送料（円）", value=200)
+cost_price = st.number_input("仕入れ値（円）", value=500)
 
-mercari_fee = price * 0.1
-profit = price - shipping - cost - mercari_fee
+mercari_fee = int(sell_price * 0.1)
+profit = sell_price - mercari_fee - shipping_fee - cost_price
 
-st.write(f"🧾 メルカリ手数料：{mercari_fee:.0f}円")
-st.write(f"💹 利益：{profit:.0f}円")
+st.markdown(f"**🧾 メルカリ手数料：** ¥{mercari_fee:,}")
+st.markdown(f"**📊 利益：** ¥{profit:,}")
 
-# -------------------------
-# 💾 CSV保存
-# -------------------------
-if st.button("📥 計算結果を保存（CSV）"):
+# 保存ボタン
+if st.button("CSVに保存する"):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = pd.DataFrame([{
         "日時": now,
-        "販売価格": price,
-        "送料": shipping,
-        "仕入れ値": cost,
+        "商品名": product_name,
+        "販売価格": sell_price,
+        "送料": shipping_fee,
+        "仕入れ値": cost_price,
         "手数料": mercari_fee,
         "利益": profit
     }])
-    df.to_csv("profit_history.csv", mode='a', index=False, header=False)
-    st.success("✅ 結果を保存しました！")
+    df.to_csv("profit_history.csv", mode="a", index=False, header=False)
+    st.success("保存しました！")
+
+# 注意：相場スクレイピング本実装は実行環境によって制限されます。
