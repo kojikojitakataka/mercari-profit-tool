@@ -12,7 +12,7 @@ st.write("こんにちは！これはメルカリ転売向けの利益計算ア�
 st.subheader("🖼️ 商品画像のアップロード")
 uploaded_image = st.file_uploader("画像ファイルを選択してください（JPG, PNG）", type=["jpg", "jpeg", "png"])
 if uploaded_image is not None:
-    st.image(uploaded_image, caption="アップロードされた画像", use_column_width=True)
+    st.image(uploaded_image, caption="アップロードされた画像", use_container_width=True)
     st.success("画像をアップロードしました！")
 
 # =====================
