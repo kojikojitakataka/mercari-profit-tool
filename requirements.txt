@@ -7,4 +7,4 @@ ftfy
 regex
 tqdm
 git+https://github.com/openai/CLIP.git
-
+pip install beautifulsoup4
