@@ -1,11 +1,11 @@
+​
+自分
+​
 streamlit
 pandas
-openpyxl
-matplotlib
 Pillow
 torch
 torchvision
-torchaudio
 ftfy
 regex
 tqdm
