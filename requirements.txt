@@ -1,6 +1,3 @@
-​
-自分
-​
 streamlit
 pandas
 Pillow
